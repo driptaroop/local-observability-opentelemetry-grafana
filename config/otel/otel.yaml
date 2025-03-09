@@ -1,0 +1,81 @@
+receivers:
+  otlp:
+      protocols:
+        http:
+          endpoint: "0.0.0.0:4318"
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'mimir'
+          scrape_interval: 5s
+          static_configs:
+              - targets: ['mimir:9009']
+                labels:
+                  group: 'infrastructure'
+                  service: 'mimir'
+        - job_name: 'user-service'
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+              - targets: ['user-service:8080']
+                labels:
+                  group: 'service'
+                  service: 'user-service'
+        - job_name: 'account-service'
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+            - targets: [ 'account-service:8080' ]
+              labels:
+                group: 'service'
+                service: 'account-service'
+        - job_name: 'transaction-service'
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+            - targets: [ 'transaction-service:8080' ]
+              labels:
+                group: 'service'
+                service: 'transaction-service'
+        - job_name: 'notification-service'
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+            - targets: [ 'notification-service:8080' ]
+              labels:
+                group: 'service'
+                service: 'notification-service'
+        - job_name: 'grafana'
+          static_configs:
+            - targets: [ 'grafana:3000' ]
+              labels:
+                service: 'grafana'
+                group: 'infrastructure'
+
+processors:
+  batch:
+
+exporters:
+  otlphttp/mimir:
+    endpoint: http://mimir:9009/otlp
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp,prometheus]
+      processors: [batch]
+      exporters: [otlphttp/mimir]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/loki]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/tempo]

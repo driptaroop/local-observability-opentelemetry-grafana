@@ -1,0 +1,130 @@
+services:
+  db-postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 1G
+  grafana:
+    image: grafana/grafana:11.5.2
+    volumes:
+      - "./config/grafana/grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasources.yaml"
+      - "./ca.crt:/etc/ssl/certs/ca-certificates.crt"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=flameGraph traceqlSearch correlations traceQLStreaming metricsSummary traceqlEditor traceToMetrics traceToProfiles datatrails
+      - GF_INSTALL_PLUGINS=grafana-lokiexplore-app,grafana-exploretraces-app,grafana-pyroscope-app
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    depends_on:
+      - loki
+      - mimir
+  mimir:
+    image: grafana/mimir:2.15.0
+    command: [ "-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml" ]
+    volumes:
+      - "./config/mimir/mimir.yaml:/etc/mimir.yaml"
+  loki:
+    image: grafana/loki:3.4.2
+    command: [ "--pattern-ingester.enabled=true", "-config.file=/etc/loki/loki.yaml" ]
+    volumes:
+      - "./config/loki/loki.yaml:/etc/loki/loki.yaml"
+  tempo:
+    image: grafana/tempo:2.7.1
+    volumes:
+      - "./config/tempo/tempo.yaml:/etc/tempo/tempo.yaml"
+    command:
+      - "--config.file=/etc/tempo/tempo.yaml"
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    volumes:
+      - ./config/otel/otel.yaml:/etc/config.yaml
+    command:
+      - "--config=/etc/config.yaml"
+    depends_on:
+      - loki
+      - mimir
+      - tempo
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: user-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=user_data
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: user-service
+      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    depends_on:
+      - db-postgres
+      - otel-collector
+  account-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: account-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=accounts_data
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: account-service
+      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    depends_on:
+      - user-service
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: notification-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=notifications_data
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: notification-service
+      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    depends_on:
+      - user-service
+  transaction-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: transaction-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=transactions_data
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: transaction-service
+      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    depends_on:
+      - notification-service
+      - account-service

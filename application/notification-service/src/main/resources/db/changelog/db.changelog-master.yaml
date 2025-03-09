@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: schema_01.sql
+      relativeToChangelogFile: true
