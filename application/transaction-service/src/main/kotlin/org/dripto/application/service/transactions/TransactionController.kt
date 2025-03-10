@@ -4,9 +4,11 @@ import org.dripto.application.service.clients.AccountsClient
 import org.dripto.application.service.clients.NotificationsClient
 import org.dripto.application.service.clients.UserClient
 import org.dripto.application.service.utils.log
+import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -23,6 +25,7 @@ class TransactionController(
 
     @PostMapping("/transactions/random")
     @Transactional
+    @ResponseStatus(HttpStatus.CREATED)
     fun randomTransaction(): Transaction {
         log.info("generating random transaction")
         val user = userClient.getUsers().random()
@@ -71,6 +74,7 @@ class TransactionController(
 
     @PostMapping("/transactions")
     @Transactional
+    @ResponseStatus(HttpStatus.CREATED)
     fun createTransaction(transaction: Transaction): Transaction {
         log.info("creating transaction {}", transaction)
         // check if user exists

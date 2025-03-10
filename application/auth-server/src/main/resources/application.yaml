@@ -5,6 +5,16 @@ spring:
     oauth2:
       authorizationserver:
         client:
+          k6:
+            registration:
+              client-id: "k6"
+              client-secret: "{noop}k6-secret"
+              scopes:
+                - "local"
+              authorization-grant-types:
+                - "client_credentials"
+              client-authentication-methods:
+                - "client_secret_basic"
           account-service:
             registration:
               client-id: "account-service"
