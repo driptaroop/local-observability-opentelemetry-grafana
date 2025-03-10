@@ -5,7 +5,7 @@ create table if not exists transactions
 (
     transaction_id          UUID primary key,
     transaction_date        DATE,
-    transaction_amount      DECIMAL(7, 2),
+    transaction_amount      DECIMAL(20, 2),
     transaction_type        VARCHAR(10),
     merchant_name           VARCHAR(50),
     transaction_description TEXT,

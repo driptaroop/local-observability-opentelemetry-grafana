@@ -19,7 +19,7 @@ data class Account(
     val accountNumber: String,
     @Column(name = "account_holder_name")
     val accountHolderName: String,
-    val balance: BigDecimal,
+    var balance: BigDecimal,
     @Column(name = "account_type")
     val accountType: String,
     @Column(name = "interest_rate")

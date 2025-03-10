@@ -49,3 +49,13 @@ COPY --from=builder /app/application/transaction-service/build/libs/*.jar /app.j
 COPY opentelemetry-javaagent.jar ./otel.jar
 
 ENTRYPOINT ["java", "-javaagent:/app/otel.jar", "-jar", "/app.jar"]
+
+FROM eclipse-temurin:21-alpine AS auth-server
+
+WORKDIR /app
+
+EXPOSE 9090
+COPY --from=builder /app/application/auth-server/build/libs/*.jar /app.jar
+COPY opentelemetry-javaagent.jar ./otel.jar
+
+ENTRYPOINT ["java", "-javaagent:/app/otel.jar", "-jar", "/app.jar"]

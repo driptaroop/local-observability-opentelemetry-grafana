@@ -15,6 +15,11 @@ spring:
       hibernate:
         format_sql: false
         show_sql: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-server:9090/oauth2/jwks
 # enable actuator endpoints
 management:
   endpoints:

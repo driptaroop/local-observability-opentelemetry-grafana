@@ -45,6 +45,14 @@ receivers:
               labels:
                 group: 'service'
                 service: 'notification-service'
+        - job_name: 'auth-server'
+          scrape_interval: 5s
+          metrics_path: '/actuator/prometheus'
+          static_configs:
+            - targets: [ 'auth-server:9090' ]
+              labels:
+                group: 'service'
+                service: 'auth-server'
         - job_name: 'grafana'
           static_configs:
             - targets: [ 'grafana:3000' ]

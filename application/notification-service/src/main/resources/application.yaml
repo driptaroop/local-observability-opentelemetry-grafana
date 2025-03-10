@@ -1,4 +1,21 @@
 spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          auth-server:
+            token-uri: http://auth-server:9090/oauth2/token
+        registration:
+          notification-service:
+            client-id: "notification-service"
+            client-secret: "notification-service-secret"
+            authorization-grant-type: client_credentials
+            scope: local
+            provider: auth-server
+            client-authentication-method: client_secret_basic
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-server:9090/oauth2/jwks
   application:
     name: notification-service
   datasource:

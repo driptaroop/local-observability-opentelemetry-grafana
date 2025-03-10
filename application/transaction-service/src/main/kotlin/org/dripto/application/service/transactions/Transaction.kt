@@ -11,7 +11,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "transactions")
-class Transaction (
+data class Transaction (
     @Id
     @Column(name = "transaction_id")
     val transactionId: UUID,

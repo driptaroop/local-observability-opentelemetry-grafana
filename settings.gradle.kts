@@ -5,11 +5,13 @@ include(
     "notification-service",
     "transaction-service",
     "user-service",
-    "rest-clients"
+    "shared",
+    "auth-server"
 )
 
 project(":account-service").projectDir = file("application/account-service")
 project(":user-service").projectDir = file("application/user-service")
 project(":transaction-service").projectDir = file("application/transaction-service")
 project(":notification-service").projectDir = file("application/notification-service")
-project(":rest-clients").projectDir = file("application/rest-clients")
+project(":shared").projectDir = file("application/shared")
+project(":auth-server").projectDir = file("application/auth-server")

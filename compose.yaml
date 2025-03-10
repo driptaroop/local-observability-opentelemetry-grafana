@@ -56,6 +56,20 @@ services:
       - loki
       - mimir
       - tempo
+  auth-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: auth-server
+    ports:
+      - "9090:9090"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: auth-server
+      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
   user-service:
     build:
       context: .
@@ -74,6 +88,7 @@ services:
     depends_on:
       - db-postgres
       - otel-collector
+      - auth-server
   account-service:
     build:
       context: .
