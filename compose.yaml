@@ -143,3 +143,14 @@ services:
     depends_on:
       - notification-service
       - account-service
+  k6:
+    image: grafana/k6:0.57.0
+    volumes:
+      - ./k6:/config
+    environment:
+      K6_WEB_DASHBOARD: true
+      K6_WEB_DASHBOARD_EXPORT: /config/k6-report.html
+    command: >
+      run /config/populate.js
+    depends_on:
+      - transaction-service

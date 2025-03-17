@@ -2,6 +2,8 @@ import http from 'k6/http';
 import { sleep, check } from 'k6';
 import encoding from 'k6/encoding';
 
+sleep(15);
+
 export const options = {
     stages: [
         { duration: '15s', target: 20 },
@@ -27,14 +29,14 @@ function getBearerToken(proto, host, port, clientId, clientSecret, grantType, sc
 }
 
 export function setup() {
-    const bearerToken = getBearerToken('http','localhost', 9090, 'k6', 'k6-secret', 'client_credentials', 'local').json('access_token');
+    const bearerToken = getBearerToken('http','auth-server', 9090, 'k6', 'k6-secret', 'client_credentials', 'local').json('access_token');
     return {
         token: bearerToken
     }
 }
 
 export default function (data) {
-    const url = 'http://localhost:8080/transactions/random';
+    const url = 'http://transaction-service:8080/transactions/random';
 
     const params = {
         headers: {
