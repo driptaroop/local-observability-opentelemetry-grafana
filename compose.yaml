@@ -1,3 +1,15 @@
+x-common-env-services: &common-env-services
+  SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres
+  SPRING_DATASOURCE_USERNAME: postgres
+  SPRING_DATASOURCE_PASSWORD: password
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+  OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
+  OTEL_METRICS_EXPORTER: none
+  OTEL_TRACES_EXPORTER: none
+  OTEL_LOGS_EXPORTER: none
+x-common-services-build: &common-services-build
+  context: .
+  dockerfile: Dockerfile_without_otel
 services:
   db-postgres:
     image: postgres:17
@@ -14,6 +26,9 @@ services:
         limits:
           cpus: 1
           memory: 1G
+    profiles:
+      - db
+      - services
   grafana:
     image: grafana/grafana:11.5.2
     volumes:
@@ -30,22 +45,31 @@ services:
     depends_on:
       - loki
       - mimir
+      - tempo
+    profiles:
+      - grafana
   mimir:
     image: grafana/mimir:2.15.0
     command: [ "-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml" ]
     volumes:
       - "./config/mimir/mimir.yaml:/etc/mimir.yaml"
+    profiles:
+      - grafana
   loki:
     image: grafana/loki:3.4.2
     command: [ "--pattern-ingester.enabled=true", "-config.file=/etc/loki/loki.yaml" ]
     volumes:
       - "./config/loki/loki.yaml:/etc/loki/loki.yaml"
+    profiles:
+      - grafana
   tempo:
     image: grafana/tempo:2.7.1
     volumes:
       - "./config/tempo/tempo.yaml:/etc/tempo/tempo.yaml"
     command:
       - "--config.file=/etc/tempo/tempo.yaml"
+    profiles:
+      - grafana
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.120.0
     volumes:
@@ -56,93 +80,73 @@ services:
       - loki
       - mimir
       - tempo
+    profiles:
+      - otel
   auth-server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      <<: *common-services-build
       target: auth-server
     ports:
       - "9090:9090"
     environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      <<: *common-env-services
       OTEL_SERVICE_NAME: auth-server
-      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_RESOURCE_ATTRIBUTES: "application=auth-server"
+    profiles:
+      - services
   user-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      <<: *common-services-build
       target: user-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=user_data
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      <<: *common-env-services
       OTEL_SERVICE_NAME: user-service
-      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_RESOURCE_ATTRIBUTES: "application=user-service"
     depends_on:
       - db-postgres
       - otel-collector
       - auth-server
+    profiles:
+      - services
   account-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      <<: *common-services-build
       target: account-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=accounts_data
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      <<: *common-env-services
       OTEL_SERVICE_NAME: account-service
-      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_RESOURCE_ATTRIBUTES: "application=account-service"
     depends_on:
       - user-service
+    profiles:
+      - services
   notification-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      <<: *common-services-build
       target: notification-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=notifications_data
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      <<: *common-env-services
       OTEL_SERVICE_NAME: notification-service
-      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_RESOURCE_ATTRIBUTES: "application=notification-service"
     depends_on:
       - user-service
+    profiles:
+      - services
   transaction-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      <<: *common-services-build
       target: transaction-service
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres?currentSchema=transactions_data
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      <<: *common-env-services
       OTEL_SERVICE_NAME: transaction-service
-      OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_RESOURCE_ATTRIBUTES: "application=transaction-service"
     depends_on:
       - notification-service
       - account-service
+    profiles:
+      - services
   k6:
     image: grafana/k6:0.57.0
     volumes:
@@ -150,7 +154,11 @@ services:
     environment:
       K6_WEB_DASHBOARD: true
       K6_WEB_DASHBOARD_EXPORT: /config/k6-report.html
+      AUTH_SERVICE: auth-server
+      TRANSACTION_SERVICE: transaction-service
     command: >
       run /config/populate.js
     depends_on:
       - transaction-service
+    profiles:
+      - load-test

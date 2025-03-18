@@ -15,6 +15,7 @@ spring:
       hibernate:
         format_sql: false
         show_sql: false
+        default_schema: user_data
   security:
     oauth2:
       resourceserver:
@@ -22,6 +23,9 @@ spring:
           jwk-set-uri: http://auth-server:9090/oauth2/jwks
 # enable actuator endpoints
 management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
   endpoints:
     web:
       exposure:

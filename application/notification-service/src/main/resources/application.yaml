@@ -32,6 +32,7 @@ spring:
       hibernate:
         format_sql: false
         show_sql: false
+        default_schema: notifications_data
 # enable actuator endpoints
 management:
   endpoints:
@@ -41,6 +42,9 @@ management:
   endpoint:
     health:
       show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
 logging:
   pattern:
     level: "trace_id=%mdc{trace_id} span_id=%mdc{span_id} trace_flags=%mdc{trace_flags} %5p"

@@ -76,7 +76,7 @@ exporters:
 service:
   pipelines:
     metrics:
-      receivers: [otlp,prometheus]
+      receivers: [otlp, prometheus]
       processors: [batch]
       exporters: [otlphttp/mimir]
     logs:

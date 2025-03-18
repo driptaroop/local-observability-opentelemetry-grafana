@@ -32,8 +32,12 @@ spring:
       hibernate:
         format_sql: false
         show_sql: false
+        default_schema: transactions_data
 # enable actuator endpoints
 management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
   endpoints:
     web:
       exposure:

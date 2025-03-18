@@ -29,14 +29,14 @@ function getBearerToken(proto, host, port, clientId, clientSecret, grantType, sc
 }
 
 export function setup() {
-    const bearerToken = getBearerToken('http','auth-server', 9090, 'k6', 'k6-secret', 'client_credentials', 'local').json('access_token');
+    const bearerToken = getBearerToken('http',`${__ENV.AUTH_SERVICE}`, 9090, 'k6', 'k6-secret', 'client_credentials', 'local').json('access_token');
     return {
         token: bearerToken
     }
 }
 
 export default function (data) {
-    const url = 'http://transaction-service:8080/transactions/random';
+    const url = `http://${__ENV.TRANSACTION_SERVICE}:8080/transactions/random`;
 
     const params = {
         headers: {
@@ -48,5 +48,5 @@ export default function (data) {
         console.log(`Failed to create transaction: ${JSON.stringify(res)}`);
     }
     check(res, { "status is 201": (r) => r.status === 201 });
-    sleep(1);
+    // sleep(1);
 }
