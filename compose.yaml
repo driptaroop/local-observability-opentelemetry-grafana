@@ -4,12 +4,12 @@ x-common-env-services: &common-env-services
   SPRING_DATASOURCE_PASSWORD: password
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
   OTEL_EXPORTER_PROMETHEUS_HOST: "0.0.0.0"
-  OTEL_METRICS_EXPORTER: none
-  OTEL_TRACES_EXPORTER: none
-  OTEL_LOGS_EXPORTER: none
+  OTEL_METRICS_EXPORTER: otlp
+  OTEL_TRACES_EXPORTER: otlp
+  OTEL_LOGS_EXPORTER: otlp
 x-common-services-build: &common-services-build
   context: .
-  dockerfile: Dockerfile_without_otel
+  dockerfile: Dockerfile
 services:
   db-postgres:
     image: postgres:17
