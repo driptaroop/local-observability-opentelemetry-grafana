@@ -2,7 +2,6 @@ FROM eclipse-temurin:21-alpine AS builder
 
 WORKDIR /app
 COPY . .
-RUN ls -altr
 COPY ca.crt /usr/local/share/ca-certificates/all-ca-certs.crt
 
 RUN chmod 644 /usr/local/share/ca-certificates/all-ca-certs.crt && update-ca-certificates

@@ -27,7 +27,7 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import java.util.*
+import java.util.UUID
 
 @SpringBootApplication
 class App {
@@ -43,6 +43,7 @@ class App {
             .csrf { it.disable() }.build()
     }
 
+    // creating the clients for the services and k6
     @Bean
     fun registeredClientRepository(): RegisteredClientRepository {
         val k6 = createClient("k6")

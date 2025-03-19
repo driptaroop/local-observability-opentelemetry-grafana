@@ -2,7 +2,7 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres?currentSchema=user_data
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: password
   liquibase:

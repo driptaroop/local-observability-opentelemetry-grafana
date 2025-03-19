@@ -1,0 +1,90 @@
+x-common-env-services: &common-env-services
+  SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/postgres
+  SPRING_DATASOURCE_USERNAME: postgres
+  SPRING_DATASOURCE_PASSWORD: password
+x-common-services-build: &common-services-build
+  context: .
+  dockerfile: Dockerfile
+services:
+  db-postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 1G
+    profiles:
+      - db
+      - services
+  auth-server:
+    build:
+      <<: *common-services-build
+      target: auth-server
+    ports:
+      - "9090:9090"
+    environment:
+      <<: *common-env-services
+      OTEL_SERVICE_NAME: auth-server
+      OTEL_RESOURCE_ATTRIBUTES: "application=auth-server"
+    profiles:
+      - services
+  user-service:
+    build:
+      <<: *common-services-build
+      target: user-service
+    environment:
+      <<: *common-env-services
+      OTEL_SERVICE_NAME: user-service
+      OTEL_RESOURCE_ATTRIBUTES: "application=user-service"
+    depends_on:
+      - db-postgres
+      - auth-server
+    profiles:
+      - services
+  account-service:
+    build:
+      <<: *common-services-build
+      target: account-service
+    environment:
+      <<: *common-env-services
+      OTEL_SERVICE_NAME: account-service
+      OTEL_RESOURCE_ATTRIBUTES: "application=account-service"
+    depends_on:
+      - user-service
+    profiles:
+      - services
+  notification-service:
+    build:
+      <<: *common-services-build
+      target: notification-service
+    environment:
+      <<: *common-env-services
+      OTEL_SERVICE_NAME: notification-service
+      OTEL_RESOURCE_ATTRIBUTES: "application=notification-service"
+    depends_on:
+      - user-service
+    profiles:
+      - services
+  transaction-service:
+    build:
+      <<: *common-services-build
+      target: transaction-service
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *common-env-services
+      OTEL_SERVICE_NAME: transaction-service
+      OTEL_RESOURCE_ATTRIBUTES: "application=transaction-service"
+    depends_on:
+      - notification-service
+      - account-service
+    profiles:
+      - services

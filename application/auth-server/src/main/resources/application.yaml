@@ -3,62 +3,6 @@ server:
 spring:
   application:
     name: auth-server
-#spring:
-#  security:
-#    oauth2:
-#      authorizationserver:
-#        client:
-#          k6:
-#            registration:
-#              client-id: "k6"
-#              client-secret: "{noop}k6-secret"
-#              scopes:
-#                - "local"
-#              authorization-grant-types:
-#                - "client_credentials"
-#              client-authentication-methods:
-#                - "client_secret_basic"
-#          account-service:
-#            registration:
-#              client-id: "account-service"
-#              client-secret: "{noop}account-service-secret"
-#              scopes:
-#                  - "local"
-#              authorization-grant-types:
-#                - "client_credentials"
-#              client-authentication-methods:
-#                - "client_secret_basic"
-#          user-service:
-#            registration:
-#              client-id: "user-service"
-#              client-secret: "{noop}user-service-secret"
-#              scopes:
-#                - "local"
-#              authorization-grant-types:
-#                - "client_credentials"
-#              client-authentication-methods:
-#                - "client_secret_basic"
-#          notification-service:
-#            registration:
-#              client-id: "notification-service"
-#              client-secret: "{noop}notification-service-secret"
-#              scopes:
-#                - "local"
-#              authorization-grant-types:
-#                - "client_credentials"
-#              client-authentication-methods:
-#                - "client_secret_basic"
-#          transaction-service:
-#            registration:
-#              client-id: "transaction-service"
-#              client-secret: "{noop}transaction-service-secret"
-#              scopes:
-#                - "local"
-#              authorization-grant-types:
-#                - "client_credentials"
-#              client-authentication-methods:
-#                - "client_secret_basic"
-# enable actuator endpoints
 management:
   endpoints:
     web:
