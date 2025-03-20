@@ -32,7 +32,8 @@ services:
   grafana:
     image: grafana/grafana:11.5.2
     volumes:
-      - "./config/grafana/grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasources.yaml"
+      - "./config/grafana/provisioning:/etc/grafana/provisioning"
+      - "./config/grafana/dashboard-definitions:/var/lib/grafana/dashboards"
       - "./ca.crt:/etc/ssl/certs/ca-certificates.crt"
     ports:
       - "3000:3000"

@@ -1,0 +1,74 @@
+@startuml
+skinparam linetype polyline
+skinparam linetype ortho
+component "Services" {
+    [user-service]
+    [account-service]
+    [notification-service]
+    [transaction-service]
+    [auth-server]
+}
+
+component "OpenTelemetry Collector" {
+    component "logs" {
+        [receiver for logs] -> [processor for logs]
+        [processor for logs] -> [exporter for logs]
+    }
+
+    component "metrics" {
+        [receiver for metrics] -> [processor for metrics]
+        [processor for metrics] -> [exporter for metrics]
+    }
+
+    component "tracing" {
+        [receiver for tracing] -> [processor for tracing]
+        [processor for tracing] -> [exporter for tracing]
+    }
+
+    [receiver for logs] -[hidden]-> [receiver for metrics]
+    [receiver for metrics] -[hidden]-> [receiver for tracing]
+
+    [user-service] --[#e60e20]---> [receiver for logs]
+    [account-service] --[#e60e20]---> [receiver for logs]
+    [notification-service] --[#e60e20]---> [receiver for logs]
+    [transaction-service] --[#e60e20]---> [receiver for logs]
+    [auth-server] --[#e60e20]---> [receiver for logs]
+
+    [user-service] <--[#0e3473]--- [receiver for metrics]
+    [account-service] <--[#0e3473]--- [receiver for metrics]
+    [notification-service] <--[#0e3473]--- [receiver for metrics]
+    [transaction-service] <--[#0e3473]--- [receiver for metrics]
+    [auth-server] <--[#0e3473]--- [receiver for metrics]
+
+    [user-service] --[#c366c2]---> [receiver for tracing]
+    [account-service] --[#c366c2]---> [receiver for tracing]
+    [notification-service] --[#c366c2]---> [receiver for tracing]
+    [transaction-service] --[#c366c2]---> [receiver for tracing]
+    [auth-server] --[#c366c2]---> [receiver for tracing]
+}
+
+component "Observability backends" {
+    [Loki]
+    [Mimir]
+    [Tempo]
+
+    [exporter for logs] --[#082b60]-> [Loki]
+    [exporter for metrics] --[#082b60]-> [Mimir]
+    [exporter for tracing] --[#082b60]-> [Tempo]
+}
+
+component "observability visualization" {
+    [Grafana]
+}
+
+[k6]
+
+[k6] <--> [auth-server]
+[k6] --> [transaction-service]
+
+[Loki] <- [Grafana]
+[Mimir] <- [Grafana]
+[Tempo] <- [Grafana]
+
+@enduml
+
