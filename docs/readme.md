@@ -720,7 +720,7 @@ In the next part, we will setup the OpenTelemetry Collector to collect the telem
 --
 
 # Setting up log aggregation with Loki, Grafana, and OpenTelemetry Collector
-Now we are in the thick of things. We have the services running in docker containers and are instrumented with the OpenTelemetry Java agent to collect the telemetry data.
+Now we are in the thick of things. Previously, we have the services running in docker containers and are instrumented with the OpenTelemetry Java agent to collect the telemetry data.
 In this part, we will setup the log aggregation with Loki, Grafana, and OpenTelemetry Collector.
 
 # OpenTelemetry Collector
@@ -964,6 +964,8 @@ Finally, if everything is running fine, you can access Grafana at `http://localh
 ![grafana_loki](assets/grafana_loki.png)
 
 In the next part, we will setup the metrics monitoring with Mimir/Prometheus, Grafana, and OpenTelemetry Collector.
+
+--
 
 # Setting up metrics monitoring with Prometheus, Mimir, Grafana, and OpenTelemetry Collector
 Now that we have log aggregation and visualization in place, the rest of the observability stack is fairly easy to setup. We will be setting up the metrics monitoring with `Prometheus`, `Mimir`, `Grafana`, and OpenTelemetry Collector.
@@ -1588,6 +1590,7 @@ The final thing left to be done is to use a load testing tool like `k6` to gener
 # Load testing with k6
 `k6` is a modern load testing tool that is built for the cloud-native era. It is designed to be developer-friendly, scalable, and open-source. `k6` is built on top of the Go programming language and use a JavaScript-like syntax for writing test scripts.
 
+In the previous sections, we have set up the observability stack for the microservices. We have log aggregation, metrics monitoring, and distributed tracing in place. 
 We will use `k6` to generate some load on the services and see the performance impact on the services with and without the observability java agent. First, we will generate some load on the services by generating some random transactions.
 
 The complete component diagram with `k6` would look something like this (a little intimidating, I know). The plantUML code is available in the repo. (TODO: Add the plantUML code)
@@ -1718,3 +1721,7 @@ OpenTelemetry is also working on a [eBPF signal exporter](https://github.com/ope
 - Include an eBPF signal exporter(preferably OTEL, but can try to use Beyla as well) to the observability stack to reduce the performance impact.
 - Have the entire stack running in a Kubernetes cluster to see how the observability stack performs in a production environment.
 - Connect the services and OTEL collectors to a cloud based observability platform like Grafana Cloud.
+
+# References
+- [OpenTelemetry](https://opentelemetry.io/)
+- The code repo: https://github.com/driptaroop/local-observability-opentelemetry-grafana
